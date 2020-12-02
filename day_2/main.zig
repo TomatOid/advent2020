@@ -38,7 +38,7 @@ fn charToDigit(c: u8) u8 {
     };
 }
 
-pub fn isPasswordValid(password_str: []const u8) !bool {
+pub fn isPasswordValid(password_str: []const u8) !u1 {
     // first, parse the first term
     var i: u64 = 0;
     while (i < password_str.len and password_str[i] >= '0' and password_str[i] <= '9') : (i += 1) {}
@@ -58,13 +58,8 @@ pub fn isPasswordValid(password_str: []const u8) !bool {
     if (!mem.eql(u8, password_str[i .. i + 2], ": ")) return error.InvalidChar;
     i += 2;
 
-    var char_count: u64 = 0;
-    while (i < password_str.len) : (i += 1) {
-        char_count += @boolToInt(password_str[i] == char);
-    }
-
-    try stdout.print("min: {}, max: {}, count: {}\n", .{ min_count, max_count, char_count });
-    return char_count >= min_count and char_count <= max_count;
+    if (password_str.len < max_count + i or password_str.len < min_count + i) return error.Invalid;
+    return @boolToInt(password_str[i + min_count - 1] == char) ^ @boolToInt(password_str[i + max_count - 1] == char);
 }
 
 pub fn main() !void {
@@ -73,8 +68,8 @@ pub fn main() !void {
     var counter: usize = 0;
     var buffer: [1024]u8 = undefined;
     while (try file.readUntilDelimiterOrEof(buffer[0..], '\n')) |line| {
-        counter += @boolToInt(try isPasswordValid(line));
-        try std.io.getStdOut().writer().print("{}\n", .{line});
+        counter += try isPasswordValid(line);
+        try std.io.getStdOut().writer().print("{} {}\n", .{ line, counter });
     }
     try std.io.getStdOut().writer().print("{}\n", .{counter});
 }
