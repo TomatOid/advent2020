@@ -52,5 +52,11 @@ pub fn main() !void {
         mountain.width = line.len;
         mountain.height += 1;
     }
-    try stdout.print("{}\n", .{trees_count});
+    var product: usize = 1;
+    product *= countTrees(mountain, 1, 1);
+    product *= countTrees(mountain, 3, 1);
+    product *= countTrees(mountain, 5, 1);
+    product *= countTrees(mountain, 7, 1);
+    product *= countTrees(mountain, 1, 2);
+    try stdout.print("{}\n", .{product});
 }
