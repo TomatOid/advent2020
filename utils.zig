@@ -55,6 +55,26 @@ pub fn iterateMultiDelim(delims: [][]const u8, string: []const u8, state: *?[]co
     } else return null;
 }
 
+const StringDelimIterator = struct {
+    state: ?[]const u8 = string,
+    delim: []const u8,
+    pub fn next(self: *@This()) ?[]const u8 {
+        if (self.state) |str| {
+            if (splitString(self.delim, str)) |pieces| {
+                self.state = pieces[1];
+                return pieces[0];
+            } else {
+                self.state = null;
+                return str;
+            }
+        } else return null;
+    }
+};
+
+pub fn getDelimIterator(delim: []const u8, string: []const u8) StringDelimIterator {
+    return .{ .state = string, .delim = delim };
+}
+
 pub fn parseU64(buf: []const u8, radix: u8) !u64 {
     var x: u64 = 0;
 
