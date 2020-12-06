@@ -11,7 +11,9 @@ pub fn seatToRowCol(seat_str: []const u8) [2]u32 {
 
 test "rows / columns" {
     var pos = seatToRowCol("BFFFBBFRRR");
-    std.testing.expect(pos[0] == 70 or pos[1] == 7);
+    std.testing.expect(pos[0] == 70 and pos[1] == 7);
     pos = seatToRowCol("FFFBBBFRRR");
-    std.testing.expect(pos[0] == 14 or pos[1] == 119);
+    std.testing.expect(pos[0] == 14 and pos[1] == 7);
 }
+
+//pub fn main() !void {
