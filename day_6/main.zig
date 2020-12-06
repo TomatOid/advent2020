@@ -16,15 +16,17 @@ pub fn countQuestions(file_buffer: []const u8, file_length: usize) !u64 {
     var total: u64 = 0;
     while (group_iterator.next()) |group| {
         var person_iterator = getDelimIterator("\n", group);
-        var letters_used: u64 = 0;
+        var letters_same: u64 = 0xffffffffffffffff;
         while (person_iterator.next()) |person| {
+            var letters_used: u64 = 0;
             try stdout.print("{}\n", .{person});
             for (person) |letter| {
                 try stdout.print("{}\n", .{letter});
                 letters_used |= @as(u64, 1) << @intCast(u6, letter - 'a');
             }
+            letters_same &= letters_used;
         }
-        total += bitCount(letters_used);
+        total += bitCount(letters_same);
     }
     return total;
 }
