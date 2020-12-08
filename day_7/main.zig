@@ -118,3 +118,27 @@ test "build tree" {
     var gold_node = bags_map.get("shiny gold bag") orelse unreachable;
     std.testing.expect(gold_node.countDescendents() == 4);
 }
+
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = &gpa.allocator;
+
+    var cwd = std.fs.cwd();
+    var file = try cwd.openFile("rules.txt", .{ .read = true, .write = false });
+    var file_buffer: [65536]u8 = undefined;
+    var file_length = try file.read(file_buffer[0..]);
+    if (file_length >= file_buffer.len) return error.FileTooLarge;
+
+    var bags_map = std.StringHashMap(*TreeNode).init(allocator);
+    defer bags_map.deinit();
+    defer {
+        var iterator = bags_map.iterator();
+        while (iterator.next()) |kv| {
+            kv.value.freeSelf(allocator);
+        }
+    }
+
+    try buildTree(file_buffer[0 .. file_length - 1], &bags_map, allocator);
+    var gold_node = bags_map.get("shiny gold bag") orelse return error.NoShinyGold;
+    try stdout.print("{}\n", .{gold_node.countDescendents()});
+}
