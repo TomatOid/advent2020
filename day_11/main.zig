@@ -8,23 +8,39 @@ const Map = struct {
     height: usize,
     data: []u8,
 
-    pub fn getCharAt(self: Map, x: i64, y: i64) u8 {
+    pub fn getCharAt(self: Map, x: i64, y: i64) ?u8 {
         if (y >= self.height or y < 0 or x >= self.width or x < 0) {
-            return '.';
+            return null;
         }
         return self.data[@intCast(usize, x) + @intCast(usize, y) * self.width];
     }
 
+    fn castRay(self: Map, start_x: i64, start_y: i64, dir_x: i64, dir_y: i64) u8 {
+        var x = start_x + dir_x;
+        var y = start_y + dir_y;
+        var result: u8 = '.';
+        while (self.getCharAt(x, y)) |char| : ({
+            x += dir_x;
+            y += dir_y;
+        }) {
+            if (char != '.') {
+                result = char;
+                break;
+            }
+        }
+        return result;
+    }
+
     pub fn getAdjacent(self: Map, x: i64, y: i64) [8]u8 {
         var result: [8]u8 = undefined;
-        result[0] = self.getCharAt(x - 1, y - 1);
-        result[1] = self.getCharAt(x, y - 1);
-        result[2] = self.getCharAt(x + 1, y - 1);
-        result[3] = self.getCharAt(x + 1, y);
-        result[4] = self.getCharAt(x + 1, y + 1);
-        result[5] = self.getCharAt(x, y + 1);
-        result[6] = self.getCharAt(x - 1, y + 1);
-        result[7] = self.getCharAt(x - 1, y);
+        result[0] = self.castRay(x, y, -1, -1);
+        result[1] = self.castRay(x, y, 0, -1);
+        result[2] = self.castRay(x, y, 1, -1);
+        result[3] = self.castRay(x, y, 1, 0);
+        result[4] = self.castRay(x, y, 1, 1);
+        result[5] = self.castRay(x, y, 0, 1);
+        result[6] = self.castRay(x, y, -1, 1);
+        result[7] = self.castRay(x, y, -1, 0);
         return result;
     }
 };
@@ -72,7 +88,7 @@ pub fn main() !void {
                 if (this_seat == 'L' and occupied_count == 0) seats.data[x + y * seats.width] = '#';
                 if (this_seat == '#') {
                     occupancy += 1;
-                    if (occupied_count >= 4)
+                    if (occupied_count >= 5)
                         seats.data[x + y * seats.width] = 'L';
                 }
             }
